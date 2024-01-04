@@ -1,0 +1,31 @@
+//Header Files
+#include <p18f45K22.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <xc.h>
+
+//Defines
+#define _XTAL_FREQ 10000000 // On définit la valeur d'une variable globale à _XTAL_FREQ à 10000000
+
+//Pragmas
+#pragma config FOSC = HSMP
+#pragma config FCMEN = OFF
+#pragma config WDTEN = OFF
+#pragma config XINST = OFF
+
+#pragma config LVP = OFF
+
+void init_uart1(void);
+void init_timer0(void);
+void init_rfid(void);
+char flag_timer;
+
+void write_uart1(char test);
+int read_uart1();
+int identity();
+void interrupt timer_interrupt(void);
+char rfid;
+char calibrate(void);
+char test=0x55;
+
+    
