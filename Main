@@ -1,0 +1,63 @@
+/*
+ * File:   newmain.c
+ * Author: asr8203
+ *
+ * Created on 21 décembre 2023, 09:10
+ */
+
+#include "newxc8_header.h"
+//main file
+void main(void)
+{
+   // TRISA0=1;   //set analog i/p
+    TRISB=0;  //port B as o/p
+    TRISD=0; //port D as o/p
+    char test=0x55;
+    char rfid;
+     
+    
+    init_rfid();  //initialize rfid            
+    init_uart1();  //initialize uart link   
+    init_timer0();     //initialize timer
+    
+    rfid=0;
+    PORTD=0;   //display o/p in portD
+    PORTB=0;
+        
+    while(rfid!=0x55)
+    {  /// echo function
+        write_uart1(test);
+
+        rfid= read_uart1();
+
+        PORTD=rfid;   //display o/p in portD
+        PORTB=rfid>>4; //display  result in portB
+    }
+    
+    INTCONbits.TMR0IE=0; //timer off
+    flag_timer==0;
+    T0CONbits.TMR0ON=0;
+     
+     identity() ;//calling identity fn
+     __delay_ms(1);
+     
+     calibrate();
+     __delay_ms(1);//calling calibration fn
+     
+     //select_protocol();// calling protocol fn
+     
+     //get nfc
+     
+     //if(//open:close)
+    
+    while(1)
+        {
+        PORTD=0xff;
+        PORTB=0xff;   
+    }  
+    
+    
+}
+
+
+   
