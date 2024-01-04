@@ -1,0 +1,199 @@
+
+
+#include "newxc8_header.h"
+
+//Identity
+
+
+int identity_received;
+int identity_data[15]={0x4E,0x46,0x43,0x20,0x46,0x53,0x32,0x4A,0x41,0x53,0x54,0x34,0x00}; //  the identity is 13 ascii+crc 2 bytes 
+int command[13];
+//void write_uart1();
+//int read_uart1();
+//int identity();  //identity fn
+unsigned char code;  //variable to read code
+unsigned char len;  //variable to read len
+
+
+
+// Function to send identity command 
+int identity() 
+{
+    //identity_received = 0;
+    char respcode=0x00;
+    char resplen=0x00;
+    // Send identity command
+   write_uart1(0x01); //IDN command
+   write_uart1(0x00);
+    
+    respcode= read_uart1(); //to read code
+    resplen= read_uart1(); //to read len 
+    
+    for(int i=0;i<resplen;i++)
+    {
+      command[i]= read_uart1(); 
+       
+   }
+    identity_received=1;
+
+    
+    //to check the received len match the tx length
+  if (identity_received==1)
+  
+    for(int i=0;i<13;i++)
+    {
+        // if   identity_data[i]=command[i];
+          // return ;  // return Identity received
+           //break;
+    
+    if(command[i]==identity_data[i]) //to verify if received data=sent data +store
+        return 1;
+    else
+        return 0;  //error
+    }
+     
+}
+
+
+//Calibration
+int response[3];
+int tagdetect; 
+int i;
+unsigned char code;  //variable to read code
+unsigned char len;  //variable to read len
+unsigned char data; //variable to read data
+
+
+
+
+char calibrate(void) //calibration fn w/_ power values
+{
+unsigned char  power[8]={0x00,0xFC,0x7C,0x3C,0x5C,0x6C,0x74,0x70};
+unsigned char  comm[16]={0x07,0x0E,0x03,0xA1,0x00,0xF8,0x01,0x18,0x00,0x20,0x60,0x60,0x00,0x00,0x3F,0x01};
+
+for (int i=0;i<16;i++)
+{
+      write_uart1(comm[i]); 
+}
+code= read_uart1(); //to read code
+len= read_uart1(); //to read len 
+data=read_uart1();  //to read last byte data-tag detected/not
+
+for( i=0;i<=len;i++)  //loop to send in all power values
+{
+    comm[13]=power[i]; //to set power values in command
+    write_uart1(comm[i]); //to send the calibration data 
+    //send_power[i]=write_uart1(); //send the content
+}
+
+
+unsigned int response[3]; //read the response
+for( i=0;i<3;i++)  //loop to read the 3 places in response
+{
+    response[i]=read_uart1(); //read the response
+}
+
+//analyse the response
+if(response[0]==00 && response[1]==01 &&response[2]==02)
+{
+   tagdetect=1; //tag detected
+   return 1;
+} 
+else if(response[0]==00 && response[1]==01 &&response[2]==01)
+{
+  tagdetect=0;//tag not detected/timeout  
+  return 0;
+}
+else
+{
+  tagdetect=0;//no tag found/invalid
+}
+return 0;
+}
+ 
+//Protocol
+
+//unsigned char command(0x02);// code to select protocol
+int i;
+
+unsigned char select_protocol()
+{
+    //0x02020200
+    unsigned char proto[4]={0x02,0x02,0x02,0x00};
+    
+    for(i=0;i<=4;i++)  
+{
+     write_uart1(proto[i]); //to set protocol to ISO / IEC 14443-A 
+     read_uart1(); //read the data
+}
+    return 0;
+    
+    
+}
+
+
+//GET NFC
+
+unsigned int nfc[20];
+//unsigned char R1[4];
+//unsigned char R2[5];
+unsigned char code;  //variable to read code
+unsigned char len;  //variable to read len
+unsigned char data; //variable to read data
+//unsigned char iden[];
+
+
+ unsigned char get_NFC_tag () 
+{
+/*write_uart1(0x04);  //command code to initiate connection
+    
+    code= read_uart1(); //to read code
+    len= read_uart1(); //to read len 
+    
+    for(int i=0;i<len;i++)  //read the command code
+    {
+      nfc[i]= read_uart1(); 
+       
+    }
+  return;
+ }*/
+
+    
+    //0x 04 02 26 07
+ //unsigned char R1[4]={0x04,0x02,0x26,0x07};
+
+write_uart1(0x04); 
+write_uart1(0x02);
+write_uart1(0x26);
+write_uart1(0x07);
+code= read_uart1(); //to read code
+len= read_uart1(); //to read len 
+
+for(int i=0;i<=len;i++)  //loop to read the response
+{
+   nfc[i]= read_uart1(); 
+}
+return 0;
+ }
+/*
+//0x 04 03 93 20 08
+//unsigned char R2[5]={0x04,0x03,0x93,0x20,0x08};
+
+write_uart1(0x04);//is this ryt way to send the command
+write_uart1(0x03);
+write_uart1(0x93);
+write_uart1(0x20); 
+write_uart1(0x08); 
+code= read_uart1(); //to read code
+len= read_uart1(); //to read len 
+data=read_uart1();  //to read last byte 
+
+for(int i=0;i<=len;i++)  //loop to read the response
+{
+   nfc[i]= read_uart1(); 
+   //return command[i]; //returns identity of tag
+  // identity[]=command [i]; //save identity in identity variable
+}
+return 0 ;
+
+}*/
