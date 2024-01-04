@@ -1,0 +1,68 @@
+#include "newxc8_header.h"
+
+void init_uart1()
+
+{
+    TXSTA1 = 0; // Reset USART registers to POR state
+    RCSTA1 = 0; //Reset USART registers to POR state
+    
+    RCSTA1bits.CREN=1;
+    RCSTA1bits.ADDEN=1;
+    RCSTA1bits.SPEN=1;
+    TXSTA1bits.BRGH=1;
+    TXSTA1bits.SYNC=0;
+    BAUDCON1bits.BRG16=1;
+    
+    SPBRG1=34;
+    
+    
+    
+    TRISCbits.TRISC6=0;//transmit-output
+    TRISCbits.TRISC7=1;//receiver--output
+    
+    ANSELCbits.ANSC6=0;//digital port
+    ANSELCbits.ANSC7=0;//digital port
+    
+    TXSTA1bits.TXEN=1;//FOSC=8Mhz with baud rate of 57.6K check the table of the datasheet with min error SPBRGX=34 configuring SYNC = 0, BRGH = 1, BRG16 = 1 or SYNC = 1, BRG16 = 1
+     
+}
+
+//write uart
+void write_uart1(char test){
+    while(!PIR1bits.TX1IF);//Transmit buffer is full
+  
+    TXREG1=test;
+}
+ 
+  //read uart      
+ int read_uart1(void)
+{
+    
+    while(PIR1bits.RC1IF==0 && flag_timer==0); // receive buffer is empty
+    
+    if (flag_timer==1)
+    {
+            flag_timer=0;
+            return 2;
+    }
+    else
+    return RCREG1;
+}
+ 
+
+ //rfid fn
+ void init_rfid(void)
+ {
+     
+     PORTCbits.RC6= 1;  //sending wakeup pule to start thr rfid
+     __delay_ms(10);  //e initial wake-up delay
+     PORTCbits.RC6= 0;
+     __delay_ms(10);  // minimum interrupt width
+     PORTCbits.RC6= 1;
+     __delay_ms(10);  
+     
+     //write_uart1(test);
+     return;
+     
+     
+ }
